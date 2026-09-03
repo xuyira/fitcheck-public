@@ -22,6 +22,26 @@ export function serializeOutfit(outfit: Outfit) {
   };
 }
 
+/**
+ * Payload used by wardrobe/calendar grids.  Keep large source images out of
+ * list responses; detail pages still use serializeOutfit for the full record.
+ */
+export function serializeOutfitSummary(outfit: Pick<Outfit, "id" | "source" | "finalImage" | "stickerImage" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt">) {
+  return {
+    id: outfit.id,
+    source: outfit.source,
+    image: outfit.stickerImage ?? outfit.finalImage,
+    sticker: outfit.stickerImage ?? outfit.finalImage,
+    background: outfit.backgroundImage,
+    backgroundKey: normalizeBackgroundKey(outfit.backgroundKey),
+    stickerScale: normalizeStickerScale(outfit.stickerScale),
+    stickerOffsetX: outfit.stickerOffsetX,
+    stickerOffsetY: outfit.stickerOffsetY,
+    date: new Intl.DateTimeFormat("zh-CN", { year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Shanghai" }).format(outfit.createdAt),
+    createdAt: outfit.createdAt.toISOString(),
+  };
+}
+
 export function serializeCalendarEntry(entry: CalendarEntry & { outfit: Outfit }) {
   return {
     id: entry.id,

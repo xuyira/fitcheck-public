@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { apiError } from "@/lib/http";
-import { serializeOutfit } from "@/lib/serializers";
+import { serializeOutfit, serializeOutfitSummary } from "@/lib/serializers";
 import { normalizeBackgroundKey, normalizeStickerScale } from "@/lib/backgrounds";
 
 // A 20MB image becomes roughly 28MB after base64 encoding.
@@ -17,8 +17,12 @@ function validImage(value: unknown) {
 export async function GET() {
   try {
     const user = await requireUser();
-    const outfits = await db.outfit.findMany({ where: { userId: user.id }, orderBy: { createdAt: "desc" } });
-    return NextResponse.json({ outfits: outfits.map(serializeOutfit) });
+    const outfits = await db.outfit.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, source: true, finalImage: true, stickerImage: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true },
+    });
+    return NextResponse.json({ outfits: outfits.map(serializeOutfitSummary) });
   } catch (error) { return apiError(error); }
 }
 

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { apiError } from "@/lib/http";
-import { serializeCalendarEntry } from "@/lib/serializers";
+import { serializeCalendarEntry, serializeOutfitSummary } from "@/lib/serializers";
 import { normalizeBackgroundKey, normalizeStickerScale } from "@/lib/backgrounds";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -19,10 +19,19 @@ export async function GET(request: Request) {
     const month = searchParams.get("month") ?? "";
     const entries = await db.calendarEntry.findMany({
       where: { userId: user.id, ...(month ? { date: { startsWith: month } } : {}) },
-      include: { outfit: true },
+      include: { outfit: { select: { id: true, source: true, finalImage: true, stickerImage: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true } } },
       orderBy: { date: "asc" },
     });
-    return NextResponse.json({ entries: entries.map(serializeCalendarEntry) });
+    return NextResponse.json({ entries: entries.map((entry) => ({
+      id: entry.id,
+      date: entry.date,
+      outfit: serializeOutfitSummary(entry.outfit),
+      background: entry.backgroundImage,
+      backgroundKey: normalizeBackgroundKey(entry.backgroundKey),
+      stickerScale: normalizeStickerScale(entry.stickerScale),
+      stickerOffsetX: entry.stickerOffsetX,
+      stickerOffsetY: entry.stickerOffsetY,
+    })) });
   } catch (error) { return apiError(error); }
 }
 
