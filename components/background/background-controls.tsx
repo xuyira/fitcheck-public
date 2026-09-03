@@ -69,19 +69,20 @@ interface BackgroundStepperProps {
 }
 
 export function BackgroundStepper({ value, onChange }: BackgroundStepperProps) {
-  const index = useMemo(() => Math.max(0, BACKGROUND_PRESETS.findIndex((preset) => preset.key === value.backgroundKey)), [value.backgroundKey]);
+  const options = useMemo(() => BACKGROUND_PRESETS.filter((preset) => preset.key !== "none"), []);
+  const index = useMemo(() => Math.max(0, options.findIndex((preset) => preset.key === value.backgroundKey)), [options, value.backgroundKey]);
   const move = (direction: -1 | 1) => {
-    const options = BACKGROUND_PRESETS.filter((preset) => preset.key !== "none");
-    const current = Math.max(0, options.findIndex((preset) => preset.key === value.backgroundKey));
+    const currentIndex = options.findIndex((preset) => preset.key === value.backgroundKey);
+    const current = currentIndex < 0 ? (direction > 0 ? -1 : 0) : currentIndex;
     const next = options[(current + direction + options.length) % options.length];
     onChange({ ...value, backgroundKey: next.key, backgroundImage: null });
   };
   const preset = getBackgroundPreset(value.backgroundKey);
   if (value.backgroundKey === "custom") return null;
   return <div className="background-stepper" aria-label="切换预设背景">
-    <button aria-label="上一个背景" onClick={() => move(-1)}><ChevronLeft size={21} /></button>
+    <button type="button" aria-label="上一个背景" onClick={(event) => { event.stopPropagation(); move(-1); }}><ChevronLeft size={21} /></button>
     <span>{preset.label}<small>{index + 1}/{BACKGROUND_PRESETS.length}</small></span>
-    <button aria-label="下一个背景" onClick={() => move(1)}><ChevronRight size={21} /></button>
+    <button type="button" aria-label="下一个背景" onClick={(event) => { event.stopPropagation(); move(1); }}><ChevronRight size={21} /></button>
   </div>;
 }
 
