@@ -9,6 +9,7 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:sqlite-to-postgres": "node scripts/migrate-sqlite-to-postgres.mjs",
     "db:studio": "prisma studio"
   },
   "dependencies": {
