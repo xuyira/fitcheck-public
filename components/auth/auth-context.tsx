@@ -21,7 +21,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     finally { setLoading(false); }
   }, []);
   const logout = useCallback(async () => { await apiFetch("/api/auth/logout", { method: "POST" }); setUser(null); }, []);
-  useEffect(() => { void refresh(); }, [refresh]);
+  useEffect(() => {
+    let mounted = true;
+    const bootstrap = async () => {
+      try {
+        const data = await apiFetch<{ user: SessionUser | null }>("/api/auth/me");
+        if (data.user || !mounted) { if (mounted) setUser(data.user); return; }
+        // Public portfolio/demo mode: create a demo session on the first visit.
+        // Logging out still clears the current session and does not re-bootstrap
+        // until the page is loaded again.
+        await apiFetch("/api/auth/demo", { method: "POST" });
+        const demo = await apiFetch<{ user: SessionUser | null }>("/api/auth/me");
+        if (mounted) setUser(demo.user);
+      } catch {
+        if (mounted) setUser(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    void bootstrap();
+    return () => { mounted = false; };
+  }, []);
   return <AuthContext.Provider value={{ user, loading, refresh, logout }}>{children}</AuthContext.Provider>;
 }
 
