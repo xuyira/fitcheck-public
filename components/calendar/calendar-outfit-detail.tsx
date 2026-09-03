@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BackgroundPicker, BackgroundStepper, StickerStage } from "@/components/background/background-controls";
 import { apiFetch, fileToDataUrl } from "@/lib/client-api";
@@ -13,6 +13,7 @@ import { DatePickerModal } from "@/components/modals/date-picker-modal";
 export function CalendarOutfitDetail({ entry, settings, close, remove, changeDate, onChange }: { entry: CalendarItem; settings: BackgroundSettings; close?: () => void; remove?: () => void; changeDate?: (direction: -1 | 1) => void; onChange?: (settings: BackgroundSettings) => void }) {
   const router = useRouter();
   const uploadRef = useRef<HTMLInputElement>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [localSettings, setLocalSettings] = useState(settings);
   const [message, setMessage] = useState(""); const [dateOpen, setDateOpen] = useState(false); const [sticker, setSticker] = useState(entry.outfit.sticker ?? entry.outfit.image);
   const saveToDate = async (date: string) => { try { await apiFetch("/api/calendar", { method: "POST", body: JSON.stringify({ outfitId: String(entry.outfit.id), date, ...localSettings }) }); setDateOpen(false); setMessage("已另存到日历"); } catch { setMessage("保存失败"); } }; const saveToWardrobe = async () => { try { await apiFetch("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: sticker, stickerImage: sticker, source: "LOCAL_UPLOAD" }) }); setMessage("已保存到衣橱"); } catch { setMessage("保存失败"); } };
@@ -24,7 +25,8 @@ export function CalendarOutfitDetail({ entry, settings, close, remove, changeDat
     router.push(`/calendar/${nextDate}`);
   };
   const goBack = () => { close?.(); router.push("/calendar"); }; const removeEntry = async () => { if (remove) return remove(); await apiFetch(`/api/calendar/${entry.id}`, { method: "DELETE" }); router.push("/calendar"); };
-  const save = (next: BackgroundSettings) => { setLocalSettings(next); onChange?.(next); void apiFetch(`/api/calendar/${entry.id}`, { method: "PATCH", body: JSON.stringify(next) }).catch(() => setMessage("保存失败")); };
+  const save = (next: BackgroundSettings) => { setLocalSettings(next); onChange?.(next); if (saveTimer.current) clearTimeout(saveTimer.current); saveTimer.current = setTimeout(() => { void apiFetch(`/api/calendar/${entry.id}`, { method: "PATCH", body: JSON.stringify(next) }).catch(() => setMessage("保存失败")); }, 250); };
+  useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
   const uploadNew = async (event: React.ChangeEvent<HTMLInputElement>) => { const file = event.target.files?.[0]; if (!file) return; try { setSticker(await fileToDataUrl(file)); setMessage("贴纸已上传，可移动和缩放"); } catch (e) { setMessage(e instanceof Error ? e.message : "上传失败"); } event.target.value = ""; };
   const download = async () => { if (localSettings.backgroundKey === "none") return downloadImage(sticker, `fitcheck-${entry.date}`); const stage = document.querySelector(".calendar-detail .sticker-stage") as HTMLElement | null; const box = stage?.querySelector(".sticker-box") as HTMLElement | null; if (!stage || !box) throw new Error(); const scaleOut = 2; const canvas = document.createElement("canvas"); canvas.width = stage.clientWidth * scaleOut; canvas.height = stage.clientHeight * scaleOut; const ctx = canvas.getContext("2d"); if (!ctx) throw new Error(); const load = (src: string) => new Promise<HTMLImageElement>((resolve, reject) => { const image = new Image(); image.onload = () => resolve(image); image.onerror = reject; image.src = src; }); const preset = getBackgroundPreset(localSettings.backgroundKey); const bg = localSettings.backgroundKey === "custom" ? localSettings.backgroundImage : preset.asset; if (bg) { const image = await load(bg); const ratio = Math.max(canvas.width / image.naturalWidth, canvas.height / image.naturalHeight); const w = image.naturalWidth * ratio; const h = image.naturalHeight * ratio; ctx.drawImage(image, (canvas.width - w) / 2, (canvas.height - h) / 2, w, h); } else { ctx.fillStyle = localSettings.backgroundKey === "white" ? "#fff" : preset.fallback; ctx.fillRect(0, 0, canvas.width, canvas.height); } const image = await load((box.querySelector("img") as HTMLImageElement)?.currentSrc || sticker); const sr = stage.getBoundingClientRect(); const br = box.getBoundingClientRect(); ctx.drawImage(image, (br.left - sr.left) * scaleOut, (br.top - sr.top) * scaleOut, br.width * scaleOut, br.height * scaleOut); await downloadImage(canvas.toDataURL("image/png"), `fitcheck-${entry.date}`); };
   const originals = [entry.outfit.person ? { src: entry.outfit.person, label: "人物" } : null, entry.outfit.garment ? { src: entry.outfit.garment, label: "服装" } : null].filter((item): item is { src: string; label: string } => Boolean(item));

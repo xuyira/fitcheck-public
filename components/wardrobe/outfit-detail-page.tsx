@@ -2,7 +2,7 @@
 
 import { ArrowLeft, CalendarDays, Download, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BackgroundPicker, BackgroundStepper, StickerStage } from "@/components/background/background-controls";
 import { DatePickerModal } from "@/components/modals/date-picker-modal";
 import { apiFetch, fileToDataUrl } from "@/lib/client-api";
@@ -12,11 +12,13 @@ import type { Look } from "@/lib/types";
 
 export function OutfitDetailPage({ look }: { look: Look }) {
   const router = useRouter();
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const sticker = look.sticker ?? look.image;
   const [settings, setSettings] = useState<BackgroundSettings>({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: look.backgroundKey ?? "none", backgroundImage: look.background, stickerScale: look.stickerScale ?? 1, stickerOffsetX: look.stickerOffsetX ?? 0, stickerOffsetY: look.stickerOffsetY ?? 0 });
   const [dateOpen, setDateOpen] = useState(false); const [message, setMessage] = useState("");
   const originals = [look.person ? { src: look.person, label: "人物" } : null, look.garment ? { src: look.garment, label: "服装" } : null].filter((item): item is { src: string; label: string } => Boolean(item));
-  const save = (next: BackgroundSettings) => { setSettings(next); void apiFetch(`/api/outfits/${look.id}`, { method: "PATCH", body: JSON.stringify(next) }).catch(() => setMessage("保存失败")); };
+  const save = (next: BackgroundSettings) => { setSettings(next); if (saveTimer.current) clearTimeout(saveTimer.current); saveTimer.current = setTimeout(() => { void apiFetch(`/api/outfits/${look.id}`, { method: "PATCH", body: JSON.stringify(next) }).catch(() => setMessage("保存失败")); }, 250); };
+  useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
   const deleteLook = async () => { if (!window.confirm("确定删除这套穿搭吗？")) return; try { await apiFetch(`/api/outfits/${look.id}`, { method: "DELETE" }); router.push("/wardrobe"); } catch (e) { setMessage(e instanceof Error ? e.message : "删除失败"); } };
   const downloadComposite = async () => {
     if (settings.backgroundKey === "none") return downloadImage(sticker, `fitcheck-${look.id}`);
