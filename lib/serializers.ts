@@ -27,7 +27,7 @@ export function serializeOutfit(outfit: Outfit) {
  * Payload used by wardrobe/calendar grids.  Keep large source images out of
  * list responses; detail pages still use serializeOutfit for the full record.
  */
-export function serializeOutfitSummary(outfit: Pick<Outfit, "id" | "source" | "finalImage" | "stickerImage" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> & { generationStatus?: string }) {
+export function serializeOutfitSummary(outfit: Pick<Outfit, "id" | "source" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> & { generationStatus?: string }) {
   return {
     id: outfit.id,
     source: outfit.source,
@@ -57,7 +57,7 @@ export function serializeCalendarEntry(entry: CalendarEntry & { outfit: Outfit }
   };
 }
 
-export function serializeCalendarDetail(entry: CalendarEntry & { outfit: Pick<Outfit, "id" | "source" | "stickerImage" | "finalImage" | "personImage" | "garmentImage" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> }) {
+export function serializeCalendarDetail(entry: CalendarEntry & { outfit: Pick<Outfit, "id" | "source" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> & { generationStatus?: string } }) {
   const outfit = serializeOutfitSummary(entry.outfit);
-  return { id: entry.id, date: entry.date, outfit: { ...outfit, person: entry.outfit.personImage, garment: entry.outfit.garmentImage }, background: entry.backgroundImage, backgroundKey: normalizeBackgroundKey(entry.backgroundKey), stickerScale: normalizeStickerScale(entry.stickerScale), stickerOffsetX: entry.stickerOffsetX, stickerOffsetY: entry.stickerOffsetY };
+  return { id: entry.id, date: entry.date, outfit: { ...outfit, person: entry.outfit.source === "AI_TRY_ON" ? `/api/outfits/${entry.outfit.id}/image?kind=person` : null, garment: entry.outfit.source === "AI_TRY_ON" ? `/api/outfits/${entry.outfit.id}/image?kind=garment` : null }, background: entry.backgroundImage, backgroundKey: normalizeBackgroundKey(entry.backgroundKey), stickerScale: normalizeStickerScale(entry.stickerScale), stickerOffsetX: entry.stickerOffsetX, stickerOffsetY: entry.stickerOffsetY };
 }

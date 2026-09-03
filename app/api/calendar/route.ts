@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     const month = searchParams.get("month") ?? "";
     const entries = await db.calendarEntry.findMany({
       where: { userId: user.id, ...(month ? { date: { startsWith: month } } : {}) },
-      include: { outfit: { select: { id: true, source: true, finalImage: true, stickerImage: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true } } },
+      include: { outfit: { select: { id: true, source: true, generationStatus: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true } } },
       orderBy: { date: "asc" },
     });
     return NextResponse.json({ entries: entries.map((entry) => ({

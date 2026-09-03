@@ -20,7 +20,7 @@ export async function GET() {
     const outfits = await db.outfit.findMany({
       where: { userId: user.id, savedToWardrobe: true },
       orderBy: { createdAt: "desc" },
-      select: { id: true, source: true, finalImage: true, stickerImage: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true },
+      select: { id: true, source: true, generationStatus: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true },
     });
     return NextResponse.json({ outfits: outfits.map(serializeOutfitSummary) });
   } catch (error) { return apiError(error); }
