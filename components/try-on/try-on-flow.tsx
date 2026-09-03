@@ -40,6 +40,12 @@ export function TryOnFlow() {
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStage, setGenerationStage] = useState("正在准备图片");
   const [savedOutfit, setSavedOutfit] = useState<import("@/lib/types").Look | null>(null);
+  const taskStorageKey = "fitcheck_active_try_on";
+
+  useEffect(() => {
+    const active = window.localStorage.getItem(taskStorageKey);
+    if (active) setGenerationStage("试衣正在后台生成，可切换页面查看");
+  }, []);
 
   useEffect(() => {
     if (!generating) return;
@@ -90,6 +96,7 @@ export function TryOnFlow() {
     setGenerationProgress(8);
     setGenerationStage("正在准备图片");
     setGenerating(true);
+    window.localStorage.setItem(taskStorageKey, JSON.stringify({ startedAt: Date.now() }));
     try {
       const created = await apiFetch<{ taskId?: string; status?: "SUCCEEDED"; image?: string }>("/api/try-on", { method: "POST", body: JSON.stringify({ person, garment, personWidth: personSize?.width, personHeight: personSize?.height }) });
       if (created.status === "SUCCEEDED" && created.image) {
@@ -101,6 +108,7 @@ export function TryOnFlow() {
         const sticker = await apiFetch<{ sticker: string }>("/api/sticker", { method: "POST", body: JSON.stringify({ image: created.image }) });
         setStickerImage(sticker.sticker);
         if (user) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: created.image, stickerImage: sticker.sticker, source: "AI_TRY_ON", saveToWardrobe: true, personImage: person, garmentImage: garment, backgroundImage: backgroundSettings.backgroundImage, backgroundKey: backgroundSettings.backgroundKey, stickerScale: backgroundSettings.stickerScale }) }); setSavedOutfit(saved.outfit); }
+        window.localStorage.removeItem(taskStorageKey);
         setResult(true);
         return;
       }
@@ -117,12 +125,13 @@ export function TryOnFlow() {
           const sticker = await apiFetch<{ sticker: string }>("/api/sticker", { method: "POST", body: JSON.stringify({ image: task.image }) });
           setStickerImage(sticker.sticker);
           if (user) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: task.image, stickerImage: sticker.sticker, source: "AI_TRY_ON", saveToWardrobe: true, personImage: person, garmentImage: garment, backgroundImage: backgroundSettings.backgroundImage, backgroundKey: backgroundSettings.backgroundKey, stickerScale: backgroundSettings.stickerScale }) }); setSavedOutfit(saved.outfit); }
+          window.localStorage.removeItem(taskStorageKey);
           setResult(true); return;
         }
         if (task.status === "FAILED") throw new Error(task.error || "试衣生成失败，请更换照片后重试");
       }
       throw new Error("生成时间较长，请稍后重新尝试");
-    } catch (error) { setUploadError(error instanceof Error ? error.message : "试衣生成失败，请稍后重试"); }
+    } catch (error) { window.localStorage.removeItem(taskStorageKey); setUploadError(error instanceof Error ? error.message : "试衣生成失败，请稍后重试"); }
     finally { setGenerating(false); }
   };
 
