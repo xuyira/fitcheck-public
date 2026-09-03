@@ -18,7 +18,7 @@ export async function GET() {
   try {
     const user = await requireUser();
     const outfits = await db.outfit.findMany({
-      where: { userId: user.id },
+      where: { userId: user.id, savedToWardrobe: true },
       orderBy: { createdAt: "desc" },
       select: { id: true, source: true, finalImage: true, stickerImage: true, backgroundImage: true, backgroundKey: true, stickerScale: true, stickerOffsetX: true, stickerOffsetY: true, createdAt: true },
     });
@@ -40,6 +40,7 @@ export async function POST(request: Request) {
       data: {
         userId: user.id,
         source,
+        savedToWardrobe: body.saveToWardrobe !== false,
         finalImage,
         stickerImage,
         personImage: typeof body.personImage === "string" ? body.personImage : null,
