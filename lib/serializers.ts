@@ -5,6 +5,7 @@ export function serializeOutfit(outfit: Outfit) {
   return {
     id: outfit.id,
     source: outfit.source,
+    generationStatus: outfit.generationStatus as "GENERATING" | "READY",
     // Older records have no stickerImage yet; continuing to render finalImage
     // keeps them usable until the user creates a new AI try-on.
     image: outfit.stickerImage ?? outfit.finalImage,
@@ -26,10 +27,11 @@ export function serializeOutfit(outfit: Outfit) {
  * Payload used by wardrobe/calendar grids.  Keep large source images out of
  * list responses; detail pages still use serializeOutfit for the full record.
  */
-export function serializeOutfitSummary(outfit: Pick<Outfit, "id" | "source" | "finalImage" | "stickerImage" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt">) {
+export function serializeOutfitSummary(outfit: Pick<Outfit, "id" | "source" | "finalImage" | "stickerImage" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> & { generationStatus?: string }) {
   return {
     id: outfit.id,
     source: outfit.source,
+    generationStatus: (outfit.generationStatus ?? "READY") as "GENERATING" | "READY",
     image: outfit.stickerImage ?? outfit.finalImage,
     sticker: outfit.stickerImage ?? outfit.finalImage,
     background: outfit.backgroundImage,

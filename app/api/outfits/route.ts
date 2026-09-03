@@ -41,6 +41,7 @@ export async function POST(request: Request) {
         userId: user.id,
         source,
         savedToWardrobe: body.saveToWardrobe !== false,
+        generationStatus: body.generationStatus === "GENERATING" ? "GENERATING" : "READY",
         finalImage,
         stickerImage,
         personImage: typeof body.personImage === "string" ? body.personImage : null,

@@ -96,6 +96,11 @@ export function TryOnFlow() {
     setGenerationProgress(8);
     setGenerationStage("正在准备图片");
     setGenerating(true);
+    let pendingOutfitId: string | null = null;
+    if (user) {
+      const pending = await apiFetch<{ outfit: { id: string } }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: person, source: "AI_TRY_ON", saveToWardrobe: true, generationStatus: "GENERATING", personImage: person, garmentImage: garment }) });
+      pendingOutfitId = pending.outfit.id;
+    }
     window.localStorage.setItem(taskStorageKey, JSON.stringify({ startedAt: Date.now() }));
     try {
       const created = await apiFetch<{ taskId?: string; status?: "SUCCEEDED"; image?: string }>("/api/try-on", { method: "POST", body: JSON.stringify({ person, garment, personWidth: personSize?.width, personHeight: personSize?.height }) });
@@ -107,7 +112,7 @@ export function TryOnFlow() {
         setGenerationStage("正在生成专属形象");
         const sticker = await apiFetch<{ sticker: string }>("/api/sticker", { method: "POST", body: JSON.stringify({ image: created.image }) });
         setStickerImage(sticker.sticker);
-        if (user) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: created.image, stickerImage: sticker.sticker, source: "AI_TRY_ON", saveToWardrobe: true, personImage: person, garmentImage: garment, backgroundImage: backgroundSettings.backgroundImage, backgroundKey: backgroundSettings.backgroundKey, stickerScale: backgroundSettings.stickerScale }) }); setSavedOutfit(saved.outfit); }
+        if (user && pendingOutfitId) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>(`/api/outfits/${pendingOutfitId}`, { method: "PATCH", body: JSON.stringify({ finalImage: created.image, stickerImage: sticker.sticker, generationStatus: "READY" }) }); setSavedOutfit(saved.outfit); }
         window.localStorage.removeItem(taskStorageKey);
         setResult(true);
         return;
@@ -124,7 +129,7 @@ export function TryOnFlow() {
           setGenerationStage("正在生成专属形象");
           const sticker = await apiFetch<{ sticker: string }>("/api/sticker", { method: "POST", body: JSON.stringify({ image: task.image }) });
           setStickerImage(sticker.sticker);
-          if (user) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: task.image, stickerImage: sticker.sticker, source: "AI_TRY_ON", saveToWardrobe: true, personImage: person, garmentImage: garment, backgroundImage: backgroundSettings.backgroundImage, backgroundKey: backgroundSettings.backgroundKey, stickerScale: backgroundSettings.stickerScale }) }); setSavedOutfit(saved.outfit); }
+          if (user && pendingOutfitId) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>(`/api/outfits/${pendingOutfitId}`, { method: "PATCH", body: JSON.stringify({ finalImage: task.image, stickerImage: sticker.sticker, generationStatus: "READY" }) }); setSavedOutfit(saved.outfit); }
           window.localStorage.removeItem(taskStorageKey);
           setResult(true); return;
         }
@@ -171,6 +176,6 @@ export function TryOnFlow() {
         </div>
         <div className="workflow-foot"><span /><button onClick={reset}>重新开始</button></div>
       </section>
-    </div>{generating && <div className="generating-overlay"><div className={`generating-images ${generatingBackground ? "count-3" : ""}`}><div className="generating-photo person"><img src={person!} alt="人物" /><span>人物</span></div><div className="generating-photo garment"><img src={garment!} alt="服装" /><span>服装</span></div>{generatingBackground && <div className="generating-photo background"><img src={generatingBackground} alt="背景" /><span>背景</span></div>}</div><b>{generationStage}</b><span className="generating-note">请不要关闭页面</span><div className="generating-progress" role="progressbar" aria-label="试衣生成进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={generationProgress}><i style={{ width: `${generationProgress}%` }} /></div><small>{generationProgress}%</small></div>}{uploadError && <UploadErrorModal message={uploadError} confirm={() => setUploadError("")} />}</>
+    </div>{generating && <div className="generating-overlay"><div className={`generating-images ${generatingBackground ? "count-3" : ""}`}><div className="generating-photo person"><img src={person!} alt="人物" /><span>人物</span></div><div className="generating-photo garment"><img src={garment!} alt="服装" /><span>服装</span></div>{generatingBackground && <div className="generating-photo background"><img src={generatingBackground} alt="背景" /><span>背景</span></div>}</div><b>{generationStage}</b><span className="generating-note">生成结果会直接保存到衣橱，可切换页面查看</span><div className="generating-progress" role="progressbar" aria-label="试衣生成进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={generationProgress}><i style={{ width: `${generationProgress}%` }} /></div><small>{generationProgress}%</small></div>}{uploadError && <UploadErrorModal message={uploadError} confirm={() => setUploadError("")} />}</>
   );
 }

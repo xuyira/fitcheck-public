@@ -36,6 +36,7 @@ model Outfit {
   userId          String
   source          OutfitSource    @default(LOCAL_UPLOAD)
   savedToWardrobe Boolean         @default(true)
+  generationStatus String          @default("READY")
   finalImage      String
   // Transparent person + outfit PNG. finalImage remains the original generated
   // render so that legacy records and a future re-cut operation remain possible.

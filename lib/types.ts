@@ -19,6 +19,7 @@ export interface Look {
   stickerOffsetX?: number;
   stickerOffsetY?: number;
   source?: "LOCAL_UPLOAD" | "AI_TRY_ON";
+  generationStatus?: "GENERATING" | "READY";
   createdAt?: string;
 }
 
