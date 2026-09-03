@@ -33,7 +33,9 @@ export async function createSession(userId: string) {
   cookieStore.set(SESSION_COOKIE, token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    // The temporary IP-based deployment is served over HTTP. Only mark the
+    // session cookie Secure when HTTPS is explicitly enabled in production.
+    secure: process.env.NODE_ENV === "production" && process.env.COOKIE_SECURE === "true",
     path: "/",
     expires: expiresAt,
   });
