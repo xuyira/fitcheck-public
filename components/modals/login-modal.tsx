@@ -12,6 +12,12 @@ export function LoginModal({ close, onSuccess }: { close: () => void; onSuccess?
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const enterDemo = async () => {
+    setSubmitting(true); setError("");
+    try { await apiFetch("/api/auth/demo", { method: "POST" }); await refresh(); onSuccess?.(); close(); }
+    catch (error) { setError(error instanceof Error ? error.message : "演示账号进入失败"); }
+    finally { setSubmitting(false); }
+  };
   const submit = async (event: FormEvent) => {
     event.preventDefault(); setSubmitting(true); setError("");
     try { await apiFetch(`/api/auth/${mode}`, { method: "POST", body: JSON.stringify({ email, password }) }); await refresh(); onSuccess?.(); close(); }
@@ -29,6 +35,7 @@ export function LoginModal({ close, onSuccess }: { close: () => void; onSuccess?
         <label>密码<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="至少8个字符" minLength={8} required /></label>
         {error && <p className="form-error">{error}</p>}
         <button className="primary-btn login-btn" disabled={submitting}><LogIn size={17} />{submitting ? "请稍候…" : mode === "login" ? "登录" : "创建账号"}</button>
+        <button type="button" className="secondary-btn demo-login-btn" onClick={() => void enterDemo()} disabled={submitting}>进入演示账号</button>
       </form>
     </div>
   );

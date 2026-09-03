@@ -17,7 +17,9 @@ import type { Look } from "@/lib/types";
 
 export function WardrobeGrid() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refresh } = useAuth();
+  const [demoLoading, setDemoLoading] = useState(false);
+  const enterDemo = async () => { setDemoLoading(true); try { await apiFetch("/api/auth/demo", { method: "POST" }); await refresh(); } catch (error) { setError(error instanceof Error ? error.message : "演示账号进入失败"); } finally { setDemoLoading(false); } };
   const [selected, setSelected] = useState<Look | null>(null);
   const [wardrobeLooks, setWardrobeLooks] = useState<Look[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,7 +62,7 @@ export function WardrobeGrid() {
   };
 
   if (authLoading || loading) return <div className="loading-state">正在加载…</div>;
-  if (!user) return <><div className="empty-state"><h2>登录后查看衣橱</h2><p>保存的穿搭只会显示在你的账号中。</p><button className="primary-btn" onClick={() => setLoginOpen(true)}>登录或注册</button></div>{loginOpen && <LoginModal close={() => setLoginOpen(false)} />}</>;
+  if (!user) return <><div className="empty-state"><h2>登录后查看衣橱</h2><p>保存的穿搭只会显示在你的账号中。</p><button className="primary-btn" onClick={() => setLoginOpen(true)}>登录或注册</button><button className="secondary-btn" onClick={() => void enterDemo()} disabled={demoLoading}>{demoLoading ? "正在进入…" : "进入演示账号"}</button></div>{loginOpen && <LoginModal close={() => setLoginOpen(false)} />}</>;
 
   // Cards are a deterministic preview: use the standard canvas and center the sticker,
   // independent of the editing coordinates saved in the detail page.

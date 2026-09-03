@@ -18,7 +18,9 @@ import type { CalendarItem, Look } from "@/lib/types";
 
 export function CalendarView() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, refresh } = useAuth();
+  const [demoLoading, setDemoLoading] = useState(false);
+  const enterDemo = async () => { setDemoLoading(true); try { await apiFetch("/api/auth/demo", { method: "POST" }); await refresh(); } catch (error) { setError(error instanceof Error ? error.message : "演示账号进入失败"); } finally { setDemoLoading(false); } };
   const [cursor, setCursor] = useState(new Date(2026, 8, 1));
   const [entries, setEntries] = useState<CalendarItem[]>([]);
   const [selected, setSelected] = useState<CalendarItem | null>(null);
@@ -71,7 +73,7 @@ export function CalendarView() {
   };
 
   if (authLoading || loading) return <div className="loading-state">正在加载…</div>;
-  if (!user) return <><div className="empty-state"><h2>登录后查看日历</h2><p>你的穿搭计划会按账号独立保存。</p><button className="primary-btn" onClick={() => setLoginOpen(true)}>登录或注册</button></div>{loginOpen && <LoginModal close={() => setLoginOpen(false)} />}</>;
+  if (!user) return <><div className="empty-state"><h2>登录后查看日历</h2><p>你的穿搭计划会按账号独立保存。</p><button className="primary-btn" onClick={() => setLoginOpen(true)}>登录或注册</button><button className="secondary-btn" onClick={() => void enterDemo()} disabled={demoLoading}>{demoLoading ? "正在进入…" : "进入演示账号"}</button></div>{loginOpen && <LoginModal close={() => setLoginOpen(false)} />}</>;
 
   const settingsFor = (entry: CalendarItem): BackgroundSettings => ({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: entry.backgroundKey ?? entry.outfit.backgroundKey ?? "none", backgroundImage: entry.background ?? entry.outfit.background, stickerScale: 1, stickerOffsetX: 0, stickerOffsetY: 0 });
   const updateEntry = (_look: Look, settings: BackgroundSettings) => { if (!selected) return; const next = { ...selected, background: settings.backgroundImage, backgroundKey: settings.backgroundKey, stickerScale: settings.stickerScale, stickerOffsetX: settings.stickerOffsetX, stickerOffsetY: settings.stickerOffsetY }; setEntries((current) => current.map((item) => item.id === selected.id ? next : item)); setSelected(next); };
