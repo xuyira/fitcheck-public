@@ -114,6 +114,7 @@ export function StickerStage({ sticker, settings, className = "", alt = "穿搭�
     ? { backgroundImage: `url("${settings.backgroundImage}")` }
     : preset.asset ? { backgroundImage: `url("${preset.asset}")` } : (settings.backgroundKey === "none" || settings.backgroundKey === "white" ? { backgroundColor: "#f3f0ea" } : { background: preset.fallback });
   const backgroundSrc = settings.backgroundKey === "custom" && settings.backgroundImage ? settings.backgroundImage : preset.asset;
+  useEffect(() => { BACKGROUND_PRESETS.forEach((item) => { if (item.asset) { const image = new Image(); image.src = item.asset; } }); }, []);
   useEffect(() => {
     const cached = trimmedStickerCache.get(sticker);
     if (cached) { setDisplaySticker(cached.src); setStickerRatio(cached.ratio); return; }
