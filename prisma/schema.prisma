@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String          @id @default(cuid())
+  email        String          @unique
+  passwordHash String
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  sessions     Session[]
+  outfits      Outfit[]
+  calendar     CalendarEntry[]
+  tryOnTasks   TryOnTask[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model Outfit {
+  id              String          @id @default(cuid())
+  userId          String
+  source          OutfitSource    @default(LOCAL_UPLOAD)
+  finalImage      String
+  // Transparent person + outfit PNG. finalImage remains the original generated
+  // render so that legacy records and a future re-cut operation remain possible.
+  stickerImage    String?
+  personImage     String?
+  garmentImage    String?
+  // `backgroundImage` only contains a user-uploaded background, never a
+  // flattened copy of the sticker on that background.
+  backgroundImage String?
+  backgroundKey   String          @default("none")
+  stickerScale    Float           @default(1)
+  stickerOffsetX  Float           @default(0)
+  stickerOffsetY  Float           @default(0)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calendarEntries CalendarEntry[]
+
+  @@index([userId, createdAt])
+}
+
+model CalendarEntry {
+  id        String   @id @default(cuid())
+  userId    String
+  outfitId  String
+  date      String
+  // Calendar owns a snapshot of the selected display settings. This lets a
+  // calendar date change its scene without duplicating the outfit image or
+  // changing the wardrobe default.
+  backgroundImage String?
+  backgroundKey   String          @default("none")
+  stickerScale    Float           @default(1)
+  stickerOffsetX  Float           @default(0)
+  stickerOffsetY  Float           @default(0)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  outfit    Outfit   @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@index([userId, date])
+  @@index([outfitId])
+}
+
+model TryOnTask {
+  id             String        @id @default(cuid())
+  userId         String?
+  provider       String        @default("bailian")
+  providerTaskId String?
+  status         TryOnStatus   @default(PENDING)
+  errorMessage   String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+}
+
+enum OutfitSource {
+  LOCAL_UPLOAD
+  AI_TRY_ON
+}
+
+enum TryOnStatus {
+  PENDING
+  PROCESSING
+  SUCCEEDED
+  FAILED
+}

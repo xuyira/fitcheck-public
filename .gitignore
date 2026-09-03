@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+# Local and deployment secrets. Keep .env.example as the safe template.
+.env
+.env.*
+!.env.example
+prisma/*.db
+prisma/*.db-journal
+*.log
+.DS_Store
+.cache/
+tmp/
+tsconfig.tsbuildinfo
