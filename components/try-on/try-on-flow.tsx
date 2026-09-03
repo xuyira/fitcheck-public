@@ -2,6 +2,7 @@
 
 import type { ChangeEvent } from "react";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/components/auth/auth-context";
 import { BackgroundPicker, StickerStage } from "@/components/background/background-controls";
 import { ResultView } from "@/components/try-on/result-view";
 import { UploadErrorModal } from "@/components/modals/upload-error-modal";
@@ -25,6 +26,7 @@ const stepCopy = {
 } as const;
 
 export function TryOnFlow() {
+  const { user } = useAuth();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [person, setPerson] = useState<string | null>(null);
   const [personSize, setPersonSize] = useState<{ width: number; height: number } | null>(null);
@@ -37,6 +39,7 @@ export function TryOnFlow() {
   const [stickerImage, setStickerImage] = useState<string | null>(null);
   const [generationProgress, setGenerationProgress] = useState(0);
   const [generationStage, setGenerationStage] = useState("正在准备图片");
+  const [savedOutfit, setSavedOutfit] = useState<import("@/lib/types").Look | null>(null);
 
   useEffect(() => {
     if (!generating) return;
@@ -80,7 +83,7 @@ export function TryOnFlow() {
     : backgroundSettings.backgroundKey !== "none" && backgroundSettings.backgroundKey !== "original" && backgroundSettings.backgroundKey !== "white"
       ? getBackgroundPreset(backgroundSettings.backgroundKey).asset
       : null;
-  const reset = () => { setStep(1); setPerson(null); setPersonSize(null); setGarment(null); setBackgroundSettings({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: "none" }); setResult(false); setResultImage(null); setStickerImage(null); setGenerating(false); setGenerationProgress(0); };
+  const reset = () => { setStep(1); setPerson(null); setPersonSize(null); setGarment(null); setBackgroundSettings({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: "none" }); setResult(false); setResultImage(null); setStickerImage(null); setSavedOutfit(null); setGenerating(false); setGenerationProgress(0); };
 
   const generateTryOn = async () => {
     if (!person || !garment || generating) return;
@@ -97,6 +100,7 @@ export function TryOnFlow() {
         setGenerationStage("正在生成专属形象");
         const sticker = await apiFetch<{ sticker: string }>("/api/sticker", { method: "POST", body: JSON.stringify({ image: created.image }) });
         setStickerImage(sticker.sticker);
+        if (user) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: created.image, stickerImage: sticker.sticker, source: "AI_TRY_ON", saveToWardrobe: true, personImage: person, garmentImage: garment, backgroundImage: backgroundSettings.backgroundImage, backgroundKey: backgroundSettings.backgroundKey, stickerScale: backgroundSettings.stickerScale }) }); setSavedOutfit(saved.outfit); }
         setResult(true);
         return;
       }
@@ -111,7 +115,9 @@ export function TryOnFlow() {
           setResultImage(task.image);
           setGenerationStage("正在生成专属形象");
           const sticker = await apiFetch<{ sticker: string }>("/api/sticker", { method: "POST", body: JSON.stringify({ image: task.image }) });
-          setStickerImage(sticker.sticker); setResult(true); return;
+          setStickerImage(sticker.sticker);
+          if (user) { const saved = await apiFetch<{ outfit: import("@/lib/types").Look }>("/api/outfits", { method: "POST", body: JSON.stringify({ finalImage: task.image, stickerImage: sticker.sticker, source: "AI_TRY_ON", saveToWardrobe: true, personImage: person, garmentImage: garment, backgroundImage: backgroundSettings.backgroundImage, backgroundKey: backgroundSettings.backgroundKey, stickerScale: backgroundSettings.stickerScale }) }); setSavedOutfit(saved.outfit); }
+          setResult(true); return;
         }
         if (task.status === "FAILED") throw new Error(task.error || "试衣生成失败，请更换照片后重试");
       }
@@ -120,7 +126,7 @@ export function TryOnFlow() {
     finally { setGenerating(false); }
   };
 
-  if (result && resultImage && stickerImage) return <ResultView resultImage={resultImage} stickerImage={stickerImage} person={person!} garment={garment!} initialBackground={backgroundSettings} regenerate={reset} />;
+  if (result && resultImage && stickerImage) return <ResultView resultImage={resultImage} stickerImage={stickerImage} person={person!} garment={garment!} initialBackground={backgroundSettings} initialSavedOutfit={savedOutfit} regenerate={reset} />;
 
   const preview = step === 1 ? person ?? "/default-person.png" : garment ?? "/default-garment.png";
   const kind: UploadKind = step === 1 ? "person" : step === 2 ? "garment" : "background";

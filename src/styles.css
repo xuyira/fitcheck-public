@@ -98,7 +98,7 @@ button,input{font-family:'DM Mono',monospace}
 .detail-modal.vertical .source-row img{aspect-ratio:1;height:auto;object-fit:contain;background:#f3f0ea}
 .detail-modal.vertical .detail-actions{margin-top:0}
 @media(max-width:600px){.detail-modal.vertical{max-height:calc(100vh - 96px);overflow:auto}.detail-modal.vertical .detail-image{height:min(36vh,300px);min-height:210px}.detail-modal.vertical .source-row.source-count-1{grid-template-columns:90px}.detail-modal.vertical .source-row.source-count-2{grid-template-columns:repeat(2,90px)}.detail-modal.vertical .source-row.source-count-3{grid-template-columns:repeat(3,minmax(0,90px))}}
-.generating-overlay{position:fixed;inset:0;z-index:20;background:#fffdf9;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);padding:28px}
+.generating-overlay{position:fixed;inset:74px 0 72px;z-index:2;background:#fffdf9;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--ink);padding:28px}
 .generating-images{height:245px;display:flex;align-items:center;justify-content:center;margin-bottom:28px}
 .generating-photo{width:166px;height:220px;border-radius:24px;overflow:hidden;position:relative;background:#eee8df;box-shadow:0 18px 38px rgba(71,51,37,.16);border:5px solid #fffdf9}
 .generating-photo img{width:100%;height:100%;object-fit:contain;display:block;background:#f2eee8}
@@ -189,3 +189,4 @@ button,input{font-family:'DM Mono',monospace}
 .empty-calendar-preview{width:100%;height:100%;display:grid;place-items:center;background:#f3f0ea}.empty-calendar-preview img{width:100%;height:100%;object-fit:contain}.empty-calendar-detail .outfit-originals{min-height:120px}
 
 .outfit-detail-page .outfit-originals{height:116px;min-height:116px;padding:24px 8px 8px;position:relative;display:flex;flex-direction:row!important;justify-content:space-evenly;align-items:flex-start;gap:0;overflow:hidden}.outfit-detail-page .outfit-originals::before{content:"原始图片 · " attr(data-date);position:absolute;left:0;right:0;top:6px;text-align:center;font-size:11px;color:var(--muted)}.outfit-detail-page .outfit-originals::after{content:none}.outfit-detail-page .outfit-original-item{width:88px;min-width:88px;height:78px;min-height:78px}.outfit-detail-page .outfit-original-item img{width:100%;height:100%;object-fit:contain}.outfit-detail-page .outfit-original-item span{display:none}
+@media(max-width:600px){.generating-overlay{inset:64px 0 62px}}

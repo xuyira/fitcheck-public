@@ -11,15 +11,15 @@ import { downloadImage } from "@/lib/download-image";
 import { getBackgroundPreset, type BackgroundSettings } from "@/lib/backgrounds";
 import type { Look } from "@/lib/types";
 
-interface ResultViewProps { resultImage: string; stickerImage: string; person: string; garment: string; initialBackground: BackgroundSettings; regenerate: () => void }
+interface ResultViewProps { resultImage: string; stickerImage: string; person: string; garment: string; initialBackground: BackgroundSettings; initialSavedOutfit?: Look | null; regenerate: () => void }
 
-export function ResultView({ resultImage, stickerImage, person, garment, initialBackground, regenerate }: ResultViewProps) {
+export function ResultView({ resultImage, stickerImage, person, garment, initialBackground, initialSavedOutfit, regenerate }: ResultViewProps) {
   const { user } = useAuth();
   const [settings, setSettings] = useState(initialBackground);
   const [loginOpen, setLoginOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [pending, setPending] = useState<"wardrobe" | "calendar" | null>(null);
-  const [savedOutfit, setSavedOutfit] = useState<Look | null>(null);
+  const [savedOutfit, setSavedOutfit] = useState<Look | null>(initialSavedOutfit ?? null);
   const [message, setMessage] = useState("");
 
   const ensureSaved = async (saveToWardrobe = true) => {
