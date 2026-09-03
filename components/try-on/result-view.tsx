@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, Download, RotateCcw, Shirt } from "lucide-react";
+import { CalendarDays, Download, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/auth/auth-context";
 import { BackgroundPicker, BackgroundStepper, StickerStage } from "@/components/background/background-controls";
@@ -33,7 +33,7 @@ export function ResultView({ resultImage, stickerImage, person, garment, initial
     void ensureSaved().then(() => setMessage("已保存到衣橱")).catch((e) => setMessage(e instanceof Error ? e.message : "保存失败"));
   };
   const addToCalendar = async (date: string) => {
-    try { const outfit = await ensureSaved(); await apiFetch("/api/calendar", { method: "POST", body: JSON.stringify({ outfitId: String(outfit.id), date, backgroundImage: settings.backgroundImage, backgroundKey: settings.backgroundKey, stickerScale: settings.stickerScale }) }); setDateOpen(false); setMessage("已保存到衣橱并添加到日历"); }
+    try { const outfit = await ensureSaved(); await apiFetch("/api/calendar", { method: "POST", body: JSON.stringify({ outfitId: String(outfit.id), date, backgroundImage: settings.backgroundImage, backgroundKey: settings.backgroundKey, stickerScale: settings.stickerScale }) }); setDateOpen(false); setMessage("已添加到日历"); }
     catch (e) { setMessage(e instanceof Error ? e.message : "添加失败"); }
   };
   const updateSettings = (next: BackgroundSettings) => {
@@ -54,7 +54,7 @@ export function ResultView({ resultImage, stickerImage, person, garment, initial
   return <>
     <div className="result-page">
       <div className="result-image"><div className="result-background-control"><BackgroundPicker value={settings} onChange={updateSettings} onUpload={(event) => { const file = event.target.files?.[0]; if (!file) return; void fileToDataUrl(file).then((backgroundImage) => updateSettings({ ...settings, backgroundKey: "custom", backgroundImage })).catch((e) => setMessage(e instanceof Error ? e.message : "背景上传失败")); event.target.value = ""; }} /></div><StickerStage interactive containBackground onSettingsChange={updateSettings} sticker={stickerImage} settings={settings} alt="试衣贴纸"><BackgroundStepper value={settings} onChange={updateSettings} /></StickerStage></div>
-      <div className="result-actions"><button className="result-action primary" onClick={() => void downloadComposite().then(() => setMessage("图片已开始下载")).catch(() => setMessage("下载失败"))}><Download size={17} />下载图片</button><button className="result-action" onClick={() => requestSave("wardrobe")}><Shirt size={17} />保存到衣橱</button><button className="result-action" onClick={() => requestSave("calendar")}><CalendarDays size={17} />添加到日历</button><button className="result-action" onClick={regenerate}><RotateCcw size={17} />重新生成</button></div>
+      <div className="result-actions"><button className="result-action primary" onClick={() => void downloadComposite().then(() => setMessage("图片已开始下载")).catch(() => setMessage("下载失败"))}><Download size={17} />下载图片</button><button className="result-action" onClick={() => requestSave("calendar")}><CalendarDays size={17} />添加到日历</button><button className="result-action" onClick={regenerate}><RotateCcw size={17} />重新生成</button></div>
     </div>
     {message && <p className="result-message">{message}</p>}
     {loginOpen && <LoginModal close={() => setLoginOpen(false)} onSuccess={() => { if (pending) requestSave(pending, true); setPending(null); }} />}

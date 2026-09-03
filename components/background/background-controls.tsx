@@ -77,7 +77,7 @@ export function BackgroundStepper({ value, onChange }: BackgroundStepperProps) {
     onChange({ ...value, backgroundKey: next.key, backgroundImage: null });
   };
   const preset = getBackgroundPreset(value.backgroundKey);
-  if (value.backgroundKey === "none" || value.backgroundKey === "custom") return null;
+  if (value.backgroundKey === "custom") return null;
   return <div className="background-stepper" aria-label="切换预设背景">
     <button aria-label="上一个背景" onClick={() => move(-1)}><ChevronLeft size={21} /></button>
     <span>{preset.label}<small>{index + 1}/{BACKGROUND_PRESETS.length}</small></span>
