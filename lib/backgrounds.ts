@@ -67,6 +67,7 @@ export function getBackgroundPreset(key: BackgroundKey | string | null | undefin
 }
 
 export function normalizeBackgroundKey(value: unknown): BackgroundKey {
+  if (value === "original") return "none";
   return BACKGROUND_KEYS.includes(value as BackgroundKey) ? value as BackgroundKey : "none";
 }
 

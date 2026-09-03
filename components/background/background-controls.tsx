@@ -40,7 +40,7 @@ export function BackgroundPicker({ value, onChange, onUpload, compact = false }:
   const [open, setOpen] = useState(false);
   const [hasSelected, setHasSelected] = useState(false);
   const menuPresets = [
-    ...BACKGROUND_PRESETS.filter((preset) => preset.key === "original" || preset.key === "none" || preset.key === "white").sort((a, b) => ["original", "none", "white"].indexOf(a.key) - ["original", "none", "white"].indexOf(b.key)),
+    ...BACKGROUND_PRESETS.filter((preset) => preset.key === "none" || preset.key === "white").sort((a, b) => ["none", "white"].indexOf(a.key) - ["none", "white"].indexOf(b.key)),
     ...BACKGROUND_PRESETS.filter((preset) => !["original", "none", "white"].includes(preset.key)).sort((a, b) => a.label.length - b.label.length || a.label.localeCompare(b.label, "zh-CN")),
   ];
 
@@ -55,7 +55,7 @@ export function BackgroundPicker({ value, onChange, onUpload, compact = false }:
     <div className={`background-picker ${compact ? "compact" : ""}`}>
       <span>背景</span>
       <div className="background-select-wrap">
-        <button type="button" className="background-change-btn" onClick={() => setOpen((current) => !current)}><span>{!hasSelected ? "更换背景" : hasUpload && selectValue === "custom" ? "已上传的背景" : getBackgroundPreset(selectValue).label}</span></button>
+        <button type="button" className="background-change-btn" onClick={() => setOpen((current) => !current)}><span>{hasUpload && selectValue === "custom" ? "已上传的背景" : selectValue !== "none" ? getBackgroundPreset(selectValue).label : !hasSelected ? "更换背景" : "无背景"}</span></button>
         {open && <div className="background-menu" role="listbox"><button type="button" className="background-menu-upload" onClick={() => choose("upload")}><Upload size={14} />上传背景</button><div className="background-menu-scroll">{menuPresets.map((preset) => <button type="button" className={selectValue === preset.key ? "selected" : ""} key={preset.key} onClick={() => choose(preset.key)}>{preset.label}</button>)}{hasUpload && <button type="button" className={selectValue === "custom" ? "selected" : ""} onClick={() => choose("custom")}>已上传的背景</button>}</div></div>}
       </div>
       <input ref={fileInput} className="visually-hidden" type="file" accept="image/*" onChange={onUpload} />
@@ -82,7 +82,7 @@ interface BackgroundStepperProps {
 }
 
 export function BackgroundStepper({ value, onChange }: BackgroundStepperProps) {
-  const options = useMemo(() => BACKGROUND_PRESETS.filter((preset) => preset.key !== "none"), []);
+  const options = useMemo(() => BACKGROUND_PRESETS.filter((preset) => preset.key !== "none" && preset.key !== "original"), []);
   const index = useMemo(() => Math.max(0, options.findIndex((preset) => preset.key === value.backgroundKey)), [options, value.backgroundKey]);
   const move = (direction: -1 | 1) => {
     const currentIndex = options.findIndex((preset) => preset.key === value.backgroundKey);
@@ -94,7 +94,7 @@ export function BackgroundStepper({ value, onChange }: BackgroundStepperProps) {
   if (value.backgroundKey === "custom") return null;
   return <div className="background-stepper" aria-label="切换预设背景">
     <button type="button" aria-label="上一个背景" onClick={(event) => { event.stopPropagation(); move(-1); }}><ChevronLeft size={21} /></button>
-    <span>{preset.label}<small>{index + 1}/{BACKGROUND_PRESETS.length}</small></span>
+    <span>{preset.label}<small>{index + 1}/{options.length}</small></span>
     <button type="button" aria-label="下一个背景" onClick={(event) => { event.stopPropagation(); move(1); }}><ChevronRight size={21} /></button>
   </div>;
 }

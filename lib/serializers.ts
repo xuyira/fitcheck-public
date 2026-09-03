@@ -54,3 +54,8 @@ export function serializeCalendarEntry(entry: CalendarEntry & { outfit: Outfit }
     stickerOffsetY: entry.stickerOffsetY,
   };
 }
+
+export function serializeCalendarDetail(entry: CalendarEntry & { outfit: Pick<Outfit, "id" | "source" | "stickerImage" | "finalImage" | "personImage" | "garmentImage" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> }) {
+  const outfit = serializeOutfitSummary(entry.outfit);
+  return { id: entry.id, date: entry.date, outfit: { ...outfit, person: entry.outfit.personImage, garment: entry.outfit.garmentImage }, background: entry.backgroundImage, backgroundKey: normalizeBackgroundKey(entry.backgroundKey), stickerScale: normalizeStickerScale(entry.stickerScale), stickerOffsetX: entry.stickerOffsetX, stickerOffsetY: entry.stickerOffsetY };
+}
