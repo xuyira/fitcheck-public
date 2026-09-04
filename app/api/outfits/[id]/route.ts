@@ -27,11 +27,11 @@ export async function DELETE(_: Request, context: { params: Promise<{ id: string
     const { id } = await context.params;
     const existing = await db.outfit.findFirst({ where: { id, userId: user.id }, select: { id: true } });
     if (!existing) return NextResponse.json({ error: "穿搭不存在" }, { status: 404 });
-    await db.$transaction([
-      db.calendarEntry.deleteMany({ where: { outfitId: id, userId: user.id } }),
-      db.outfit.delete({ where: { id } }),
-    ]);
-    return NextResponse.json({ ok: true });
+    // Removing an outfit from the wardrobe must not remove calendar snapshots
+    // that reference it. Keep the record for those calendar entries and hide it
+    // from the wardrobe list instead.
+    await db.outfit.update({ where: { id }, data: { savedToWardrobe: false } });
+    return NextResponse.json({ ok: true, archived: true });
   } catch (error) { return apiError(error); }
 }
 
