@@ -38,7 +38,7 @@ async function restore() {
     for (const outfit of raw.outfits || []) await tx.outfit.create({ data: { ...reviveDates(outfit, ["createdAt", "updatedAt"]), userId: user.id } });
     for (const entry of raw.calendar || []) await tx.calendarEntry.create({ data: { ...reviveDates(entry, ["createdAt"]), userId: user.id } });
     for (const task of raw.tryOnTasks || []) await tx.tryOnTask.create({ data: { ...reviveDates(task, ["createdAt", "updatedAt"]), userId: user.id } });
-  });
+  }, { maxWait: 15000, timeout: 120000 });
   console.log(`已恢复演示状态: ${name}`);
 }
 
