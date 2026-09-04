@@ -10,7 +10,9 @@
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:migrate:sqlite-to-postgres": "node scripts/migrate-sqlite-to-postgres.mjs",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "demo:save": "DEMO_SNAPSHOT_COMMAND=save node scripts/demo-snapshot.mjs",
+    "demo:restore": "DEMO_SNAPSHOT_COMMAND=restore node scripts/demo-snapshot.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "^4.2.0",

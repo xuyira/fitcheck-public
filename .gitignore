@@ -11,4 +11,5 @@ prisma/*.db-journal
 .DS_Store
 .cache/
 tmp/
+.demo-snapshots/
 tsconfig.tsbuildinfo
