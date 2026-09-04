@@ -54,6 +54,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
         ...(typeof body.personImage === "string" ? { personImage: body.personImage } : {}),
         ...(typeof body.garmentImage === "string" ? { garmentImage: body.garmentImage } : {}),
         ...(body.generationStatus === "READY" || body.generationStatus === "GENERATING" ? { generationStatus: body.generationStatus } : {}),
+        ...(typeof body.savedToWardrobe === "boolean" ? { savedToWardrobe: body.savedToWardrobe } : {}),
         backgroundKey,
         backgroundImage: backgroundKey === "custom" ? requestedBackground : null,
         stickerScale: "stickerScale" in body ? normalizeStickerScale(body.stickerScale) : existing.stickerScale,
