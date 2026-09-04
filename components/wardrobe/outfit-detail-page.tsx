@@ -13,7 +13,7 @@ import type { Look } from "@/lib/types";
 export function OutfitDetailPage({ look }: { look: Look }) {
   const router = useRouter();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sticker = look.sticker ?? look.image;
+  const sticker = look.generationStatus === "GENERATING" ? "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" : (look.sticker ?? look.image);
   const [settings, setSettings] = useState<BackgroundSettings>({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: look.backgroundKey ?? "none", backgroundImage: look.background, stickerScale: look.stickerScale ?? 1, stickerOffsetX: look.stickerOffsetX ?? 0, stickerOffsetY: look.stickerOffsetY ?? 0 });
   const [dateOpen, setDateOpen] = useState(false); const [message, setMessage] = useState("");
   const originals = [look.person ? { src: look.person, label: "人物" } : null, look.garment ? { src: look.garment, label: "服装" } : null].filter((item): item is { src: string; label: string } => Boolean(item));

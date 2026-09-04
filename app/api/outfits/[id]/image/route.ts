@@ -22,6 +22,9 @@ export async function GET(request: Request, context: { params: Promise<{ id: str
     else { const outfit = await db.outfit.findFirst({ where: { id, userId: user.id }, select: { stickerImage: true, finalImage: true } }); source = outfit?.stickerImage ?? outfit?.finalImage ?? null; }
     const image = source ? decode(source) : null;
     if (!image) return new NextResponse("Not found", { status: 404 });
-    return new NextResponse(image.data, { headers: { "Content-Type": image.type, "Cache-Control": "private, max-age=3600" } });
+    // The sticker changes in-place when a generating placeholder is completed.
+    // Do not let the browser keep the placeholder (person image) for the same
+    // URL after the final sticker is written.
+    return new NextResponse(image.data, { headers: { "Content-Type": image.type, "Cache-Control": "no-store, max-age=0, must-revalidate" } });
   } catch { return new NextResponse("Unauthorized", { status: 401 }); }
 }

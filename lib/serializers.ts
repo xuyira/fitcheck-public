@@ -2,17 +2,18 @@ import type { CalendarEntry, Outfit } from "@prisma/client";
 import { normalizeBackgroundKey, normalizeStickerScale } from "@/lib/backgrounds";
 
 export function serializeOutfit(outfit: Outfit) {
+  const imageVersion = encodeURIComponent(`${outfit.generationStatus}-${outfit.updatedAt.getTime()}`);
   return {
     id: outfit.id,
     source: outfit.source,
     generationStatus: outfit.generationStatus as "GENERATING" | "READY",
     // Older records have no stickerImage yet; continuing to render finalImage
     // keeps them usable until the user creates a new AI try-on.
-    image: `/api/outfits/${outfit.id}/image?kind=sticker`,
-    sticker: `/api/outfits/${outfit.id}/image?kind=sticker`,
-    originalImage: `/api/outfits/${outfit.id}/image?kind=original`,
-    person: outfit.personImage ? `/api/outfits/${outfit.id}/image?kind=person` : null,
-    garment: outfit.garmentImage ? `/api/outfits/${outfit.id}/image?kind=garment` : null,
+    image: `/api/outfits/${outfit.id}/image?kind=sticker&v=${imageVersion}`,
+    sticker: `/api/outfits/${outfit.id}/image?kind=sticker&v=${imageVersion}`,
+    originalImage: `/api/outfits/${outfit.id}/image?kind=original&v=${imageVersion}`,
+    person: outfit.personImage ? `/api/outfits/${outfit.id}/image?kind=person&v=${imageVersion}` : null,
+    garment: outfit.garmentImage ? `/api/outfits/${outfit.id}/image?kind=garment&v=${imageVersion}` : null,
     background: outfit.backgroundImage,
     backgroundKey: normalizeBackgroundKey(outfit.backgroundKey),
     stickerScale: normalizeStickerScale(outfit.stickerScale),
@@ -28,12 +29,13 @@ export function serializeOutfit(outfit: Outfit) {
  * list responses; detail pages still use serializeOutfit for the full record.
  */
 export function serializeOutfitSummary(outfit: Pick<Outfit, "id" | "source" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> & { generationStatus?: string }) {
+  const imageVersion = encodeURIComponent(outfit.generationStatus ?? "READY");
   return {
     id: outfit.id,
     source: outfit.source,
     generationStatus: (outfit.generationStatus ?? "READY") as "GENERATING" | "READY",
-    image: `/api/outfits/${outfit.id}/image?kind=sticker`,
-    sticker: `/api/outfits/${outfit.id}/image?kind=sticker`,
+    image: `/api/outfits/${outfit.id}/image?kind=sticker&v=${imageVersion}`,
+    sticker: `/api/outfits/${outfit.id}/image?kind=sticker&v=${imageVersion}`,
     background: outfit.backgroundImage,
     backgroundKey: normalizeBackgroundKey(outfit.backgroundKey),
     stickerScale: normalizeStickerScale(outfit.stickerScale),
