@@ -201,3 +201,4 @@ button,input{font-family:'DM Mono',monospace}
 .disabled-control{pointer-events:none;opacity:.45}
 .wardrobe-choice-card{border-radius:14px}
 .wardrobe-choice-card>span{display:none}
+.calendar-detail .outfit-originals{position:relative;padding-top:26px}.calendar-detail .outfit-originals::before{content:"原始图片";position:absolute;top:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}.calendar-detail .outfit-original-item:has(span:only-child){display:grid;place-items:center;color:var(--muted);font-size:12px}
