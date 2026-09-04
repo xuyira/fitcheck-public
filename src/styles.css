@@ -205,3 +205,4 @@ button,input{font-family:'DM Mono',monospace}
 .local-upload-originals .outfit-original-item{width:100%!important;height:100%!important;min-height:0!important;display:grid;place-items:center}.local-upload-originals .outfit-original-item span{display:block!important;position:static;background:none;padding:0;color:var(--muted);font-size:12px}.local-upload-originals .outfit-original-item img{display:none}
 .calendar-detail .outfit-original-item:has(span:only-child) img{display:none}
 .calendar-detail .outfit-originals:has(.outfit-original-item span:first-child:only-child)::before{content:none}
+.local-upload-calendar-detail .outfit-originals{position:relative;padding-top:26px}.local-upload-calendar-detail .outfit-originals::before{content:"本地上传图片";position:absolute;top:6px;left:0;right:0;text-align:center;font-size:11px;color:var(--muted)}.local-upload-calendar-detail .outfit-original-item{display:none}
