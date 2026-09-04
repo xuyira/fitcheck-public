@@ -61,5 +61,8 @@ export function serializeCalendarEntry(entry: CalendarEntry & { outfit: Outfit }
 
 export function serializeCalendarDetail(entry: CalendarEntry & { outfit: Pick<Outfit, "id" | "source" | "backgroundImage" | "backgroundKey" | "stickerScale" | "stickerOffsetX" | "stickerOffsetY" | "createdAt"> & { generationStatus?: string } }) {
   const outfit = serializeOutfitSummary(entry.outfit);
+  const version = encodeURIComponent(`${entry.outfit.generationStatus ?? "READY"}-${entry.outfit.createdAt.getTime()}`);
+  outfit.image = `/api/outfits/${entry.outfit.id}/image?kind=sticker&v=${version}`;
+  outfit.sticker = outfit.image;
   return { id: entry.id, date: entry.date, outfit: { ...outfit, person: entry.outfit.source === "AI_TRY_ON" ? `/api/outfits/${entry.outfit.id}/image?kind=person` : null, garment: entry.outfit.source === "AI_TRY_ON" ? `/api/outfits/${entry.outfit.id}/image?kind=garment` : null }, background: entry.backgroundImage, backgroundKey: normalizeBackgroundKey(entry.backgroundKey), stickerScale: normalizeStickerScale(entry.stickerScale), stickerOffsetX: entry.stickerOffsetX, stickerOffsetY: entry.stickerOffsetY };
 }
