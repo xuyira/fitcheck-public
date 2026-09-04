@@ -140,7 +140,13 @@ button,input{font-family:'DM Mono',monospace}
 .calendar-page .day.has-look .calendar-sticker .sticker-box .sticker-subject{height:100%!important;width:100%!important;max-height:100%!important;max-width:none!important;object-fit:contain;object-position:center;margin:0 auto!important}
 @keyframes calendar-pop{0%{opacity:0;transform:translateY(18px) scale(.55)}58%{opacity:1;transform:translateY(-3px) scale(1.08)}78%{transform:translateY(1px) scale(.97)}100%{opacity:1;transform:none}}
 @keyframes calendar-wiggle{0%,100%{rotate:0deg}25%{rotate:-2.5deg}50%{rotate:2deg}75%{rotate:-1deg}}
-@media(prefers-reduced-motion:reduce){.calendar-page .day.has-look .calendar-sticker,.calendar-page .calendar-sticker .sticker-subject{animation:none}}
+@keyframes wardrobe-pop{0%{opacity:0;transform:translateY(24px) scale(.72)}62%{opacity:1;transform:translateY(-4px) scale(1.06)}82%{transform:translateY(1px) scale(.98)}100%{opacity:1;transform:none}}
+@keyframes detail-wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-3deg)}40%{transform:rotate(2.5deg)}60%{transform:rotate(-1.8deg)}80%{transform:rotate(.8deg)}}
+/* Cover animations affect only the sticker layer; backgrounds remain stationary. */
+.look-image .sticker-subject{animation:wardrobe-pop .72s cubic-bezier(.2,.8,.25,1) both}
+.calendar-page .day.has-look .calendar-sticker .sticker-subject{animation:calendar-pop .72s cubic-bezier(.2,.8,.25,1) both!important}
+.calendar-detail .sticker-stage .sticker-subject,.outfit-detail-page .sticker-stage .sticker-subject{animation:detail-wiggle .72s ease-in-out both}
+@media(prefers-reduced-motion:reduce){.look-image .sticker-subject,.calendar-page .day.has-look .calendar-sticker,.calendar-page .calendar-sticker .sticker-subject,.calendar-detail .sticker-stage .sticker-subject,.outfit-detail-page .sticker-stage .sticker-subject{animation:none!important}}
 @media(max-width:700px){.result-controls,.detail-display-controls{grid-template-columns:1fr}.sticker-scale{min-width:0;justify-content:space-between}.background-step-controls{grid-template-columns:1fr}.try-background-preview{height:380px}.background-stepper span{display:none}}
 @media(max-width:700px){.outfit-detail-page{padding:20px 16px 90px}.outfit-detail-layout{grid-template-columns:1fr;gap:16px}.outfit-detail-stage{height:65vh;min-height:400px}.outfit-detail-side{padding:20px}}
 
@@ -192,3 +198,6 @@ button,input{font-family:'DM Mono',monospace}
 @media(max-width:600px){.generating-overlay{inset:64px 0 62px}}
 .wardrobe-choice-modal{width:min(620px,100%);max-height:80vh;overflow:auto}.wardrobe-choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px}.wardrobe-choice-card{border:1px solid var(--line);border-radius:8px;overflow:hidden;text-align:left;background:#fff}.wardrobe-choice-card .sticker-stage{height:150px}.wardrobe-choice-card>span{display:block;padding:8px 10px;font-size:11px;color:var(--muted)}
 .generation-card-placeholder{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#7d6b5f;background:#f3eee7}.generation-card-placeholder small{font-size:10px;color:#a39387}.loading-spinner{width:24px;height:24px;border:2px solid #d7c9bc;border-top-color:#705f52;border-radius:50%;animation:fitcheck-spin .8s linear infinite}@keyframes fitcheck-spin{to{transform:rotate(360deg)}}
+.disabled-control{pointer-events:none;opacity:.45}
+.wardrobe-choice-card{border-radius:14px}
+.wardrobe-choice-card>span{display:none}
