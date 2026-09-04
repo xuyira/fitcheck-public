@@ -13,13 +13,28 @@ import type { Look } from "@/lib/types";
 export function OutfitDetailPage({ look }: { look: Look }) {
   const router = useRouter();
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sticker = look.generationStatus === "GENERATING" ? "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=" : (look.sticker ?? look.image);
-  const [settings, setSettings] = useState<BackgroundSettings>({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: look.backgroundKey ?? "none", backgroundImage: look.background, stickerScale: look.stickerScale ?? 1, stickerOffsetX: look.stickerOffsetX ?? 0, stickerOffsetY: look.stickerOffsetY ?? 0 });
+  const placeholder = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+  const [currentLook, setCurrentLook] = useState(look);
+  const sticker = currentLook.generationStatus === "GENERATING" ? placeholder : (currentLook.sticker ?? currentLook.image);
+  const [settings, setSettings] = useState<BackgroundSettings>({ ...DEFAULT_BACKGROUND_SETTINGS, backgroundKey: currentLook.backgroundKey ?? "none", backgroundImage: currentLook.background, stickerScale: currentLook.stickerScale ?? 1, stickerOffsetX: currentLook.stickerOffsetX ?? 0, stickerOffsetY: currentLook.stickerOffsetY ?? 0 });
   const [dateOpen, setDateOpen] = useState(false); const [message, setMessage] = useState("");
   const originals = [look.person ? { src: look.person, label: "人物" } : null, look.garment ? { src: look.garment, label: "服装" } : null].filter((item): item is { src: string; label: string } => Boolean(item));
   const save = (next: BackgroundSettings) => { setSettings(next); if (saveTimer.current) clearTimeout(saveTimer.current); saveTimer.current = setTimeout(() => { void apiFetch(`/api/outfits/${look.id}`, { method: "PATCH", body: JSON.stringify(next) }).catch(() => setMessage("保存失败")); }, 250); };
   const saveNow = (next: BackgroundSettings) => { setSettings(next); if (saveTimer.current) clearTimeout(saveTimer.current); void apiFetch(`/api/outfits/${look.id}`, { method: "PATCH", body: JSON.stringify(next) }).catch(() => setMessage("保存失败")); };
   useEffect(() => () => { if (saveTimer.current) clearTimeout(saveTimer.current); }, []);
+  useEffect(() => {
+    if (currentLook.generationStatus !== "GENERATING") return;
+    let cancelled = false;
+    const check = async () => {
+      try {
+        const data = await apiFetch<{ outfit: Look }>(`/api/outfits/${look.id}`);
+        if (!cancelled && data.outfit.generationStatus !== "GENERATING") setCurrentLook(data.outfit);
+      } catch { /* keep the placeholder; the next poll may succeed */ }
+    };
+    const timer = window.setInterval(() => void check(), 3000);
+    void check();
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [currentLook.generationStatus, look.id]);
   const deleteLook = async () => { if (!window.confirm("确定删除这套穿搭吗？")) return; try { await apiFetch(`/api/outfits/${look.id}`, { method: "DELETE" }); router.push("/wardrobe"); } catch (e) { setMessage(e instanceof Error ? e.message : "删除失败"); } };
   const downloadComposite = async () => {
     if (settings.backgroundKey === "none") return downloadImage(sticker, `fitcheck-${look.id}`);
