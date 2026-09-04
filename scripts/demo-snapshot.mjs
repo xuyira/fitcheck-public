@@ -23,6 +23,7 @@ async function save() {
   const temp = `${file}.tmp-${process.pid}`;
   await fs.writeFile(temp, JSON.stringify(snapshot), "utf8");
   await fs.rename(temp, file);
+  await fs.chmod(file, 0o600);
   console.log(`已保存演示状态: ${name}`);
 }
 
